@@ -29,8 +29,10 @@ jobs:
         pyinstaller --onefile test.py
         mv dist/test dist/test.exe  # Rename the executable if needed
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: executables
-        path: dist/test.exe  # Change the path if you renamed the executable
+    - name: Commit changes
+      run: |
+        git config --local user.email "actions@github.com"
+        git config --local user.name "GitHub Actions"
+        git add dist/test.exe
+        git commit -m "Add executable"
+        git push
