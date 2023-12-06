@@ -1,6 +1,7 @@
 from sys import exit # Import Exit Code
 import json # Import Json Utils
 from supabase import create_client, Client # Import Supabase
+import bcrypt
 
 try:
     with open('config.json') as config_file:
@@ -17,6 +18,7 @@ supabase = create_client(url, key)
 tabelname = "test" # Table to use
 forbiddensearch = config['supabase']['searchhide'] # Hidden Persons
 response = None
+loggedin = False
 
 
 def search(): # Search Function
@@ -41,13 +43,13 @@ def search(): # Search Function
         print("No matching records found.")
 
 def create(): # Create Function
-    name = input("Enter First Name >>> ") 
+    firstname = input("Enter First Name >>> ") 
     lastname = input("Enter Last Name >>> ")
     city = input("Enter City >>> ")
     # Create Inputs
 
     try:
-        response, count = supabase.table(tabelname).insert({"first": name, "last": lastname, "city": city}).execute() # DB Create Call
+        response, count = supabase.table(tabelname).insert({"first": firstname, "last": lastname, "city": city}).execute() # DB Create Call
     except Exception as e:
         print(f"Error creating a new record: {e}")
         return
@@ -69,7 +71,34 @@ def create(): # Create Function
         
     print(f"{count} rows inserted.") # Print Inserted rows
 
+def login():
+    print("Login:")
+    lastname = input("Your Last Name >>>")
+    id = input("Your ID >>>")
+
+    try:
+        response = supabase.table(tabelname).select('pass').eq('last', lastname).eq('id', id).execute() # DB Search Call
+        hased = response.data[0]['pass']
+    except Exception as e:
+        print(f"Error with Last Name or ID: {e}") 
+    if hased == '-':
+        salt = bcrypt.gensalt()
+
+        print("You have no Password! \n")
+        newpass = input('Enter New Password >>>')
+        password = bcrypt.hashpw(newpass.encode('utf-8'), salt)
+        response, count = supabase.table(tabelname).update({'pass': password}).eq('last', lastname).execute()
+        print("Password Updatet!")
+    else:
+        password = input("Enter Password >>>")
+        bcrypt.checkpw(password, hased)
+        
+
+
+
+
 def main(): # Main CLI Function
+    login()
     while True:
         action = input("Enter 'Search', 'Create', or 'Quit' to exit >>> ").capitalize() # Input what to do
         
@@ -78,9 +107,7 @@ def main(): # Main CLI Function
         elif action == "Create": #Check if Create
             create()
         elif action == "Quit": # Check if Quit
-            print()
-            print()
-            print("Exiting the program. Goodbye!")
+            print(" \n \nExiting the program. Goodbye!")
             exit() # Quit
         else: # Invalid Entry Check
             print("Error: Invalid action. Please enter Search, Create, or Quit.") 
