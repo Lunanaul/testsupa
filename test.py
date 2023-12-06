@@ -1,0 +1,89 @@
+from sys import exit # Import Exit Code
+import json # Import Json Utils
+from supabase import create_client, Client # Import Supabase
+
+try:
+    with open('config.json') as config_file:
+        config = json.load(config_file)
+except (FileNotFoundError, json.JSONDecodeError) as e:
+    print(f"Error loading configuration file. Make sure the file exists and contains valid JSON: {e}")
+    exit()
+
+url = config['supabase']['url']
+key = config['supabase']['key']
+
+supabase = create_client(url, key)
+
+tabelname = "test" # Table to use
+forbiddensearch = config['supabase']['searchhide'] # Hidden Persons
+response = None
+
+
+def search(): # Search Function
+    criteria = input("Search Last Name, First Name, or City? (Last, First, City) >>> ").capitalize() # Input Column to search
+    if criteria not in ["Last", "First", "City"]: # Check Input
+        print("Error: Invalid search criteria. Please enter Last, First, or City.")
+        return
+
+    value = input(f"Enter {criteria} >>> ") # Ask Search Criteria
+
+    try:
+        response = supabase.table(tabelname).select('id', 'first', 'last', 'city', 'notes').eq(criteria.lower(), value).neq(forbiddensearch, True).execute() # DB Search Call
+    except Exception as e:
+        print(f"Error executing search: {e}")
+        return       
+
+    if response.data:
+        print("Search Results:")
+        for row in response.data:
+            print(row)
+    else:
+        print("No matching records found.")
+
+def create(): # Create Function
+    name = input("Enter First Name >>> ") 
+    lastname = input("Enter Last Name >>> ")
+    city = input("Enter City >>> ")
+    # Create Inputs
+
+    try:
+        response, count = supabase.table(tabelname).insert({"first": name, "last": lastname, "city": city}).execute() # DB Create Call
+    except Exception as e:
+        print(f"Error creating a new record: {e}")
+        return
+  
+    try:
+        if response and response[1] and isinstance(response[1], list):
+            data = response[1]
+            if data:
+                print("Record successfully added:")
+                for row in data:
+                    print(row)
+            else:
+                print("Failed to add the record.")
+        else:
+            print("Unexpected response format.")
+    except (IndexError, ValueError) as e:
+        print(f"Error processing response: {e}")
+        return
+        
+    print(f"{count} rows inserted.") # Print Inserted rows
+
+def main(): # Main CLI Function
+    while True:
+        action = input("Enter 'Search', 'Create', or 'Quit' to exit >>> ").capitalize() # Input what to do
+        
+        if action == "Search": # Check if Search
+            search()
+        elif action == "Create": #Check if Create
+            create()
+        elif action == "Quit": # Check if Quit
+            print()
+            print()
+            print("Exiting the program. Goodbye!")
+            exit() # Quit
+        else: # Invalid Entry Check
+            print("Error: Invalid action. Please enter Search, Create, or Quit.") 
+
+if __name__ == "__main__": 
+    main()
