@@ -33,7 +33,7 @@ jobs:
       run: |
         git config --local user.email "actions@github.com"
         git config --local user.name "GitHub Actions"
-        git add dist/your_script.exe
+        git add dist/test.exe
         git commit -m "Add executable"
         git push origin HEAD:main
 
