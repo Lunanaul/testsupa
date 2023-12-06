@@ -28,6 +28,6 @@ jobs:
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v3
         with:
-          base_ref: ${{ github.event.before }}
-          head_ref: ${{ github.sha }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          # Add other necessary inputs according to your requirements
 
