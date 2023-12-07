@@ -24,3 +24,8 @@ jobs:
         stale-issue-label: 'no-issue-activity'
         stale-pr-label: 'no-pr-activity'
         stale-issue-message: 'Stale issue!'
+    - uses: actions/first-interaction@v1
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        issue-message: "Hi, thanks for submiting issues on this Repository."
+        pr-message: "Hi, thanks for working on this Repository."
