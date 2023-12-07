@@ -18,8 +18,6 @@ supabase = create_client(url, key)
 tabelname = "test" # Table to use
 forbiddensearch = config['supabase']['searchhide'] # Hidden Persons
 response = None
-loggedin = False
-
 
 def search(): # Search Function
     criteria = input("Search Last Name, First Name, or City? (Last, First, City) >>> ").capitalize() # Input Column to search
@@ -71,34 +69,7 @@ def create(): # Create Function
         
     print(f"{count} rows inserted.") # Print Inserted rows
 
-def login():
-    print("Login:")
-    lastname = input("Your Last Name >>>")
-    id = input("Your ID >>>")
-
-    try:
-        response = supabase.table(tabelname).select('pass').eq('last', lastname).eq('id', id).execute() # DB Search Call
-        hased = response.data[0]['pass']
-    except Exception as e:
-        print(f"Error with Last Name or ID: {e}") 
-    if hased == '-':
-        salt = bcrypt.gensalt()
-
-        print("You have no Password! \n")
-        newpass = input('Enter New Password >>>')
-        password = bcrypt.hashpw(newpass.encode('utf-8'), salt)
-        response, count = supabase.table(tabelname).update({'pass': password}).eq('last', lastname).execute()
-        print("Password Updatet!")
-    else:
-        password = input("Enter Password >>>")
-        bcrypt.checkpw(password, hased)
-        
-
-
-
-
 def main(): # Main CLI Function
-    login()
     while True:
         action = input("Enter 'Search', 'Create', or 'Quit' to exit >>> ").capitalize() # Input what to do
         
