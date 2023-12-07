@@ -33,4 +33,4 @@ jobs:
     - name: Label Pull Request on Failure
       if: ${{ failure() }}
       run: |
-        gh pr edit ${{ github.event.number }} --add-label "Bad Build"
+        gh pr edit ${{ github.event.number }} --add-label "bug"
